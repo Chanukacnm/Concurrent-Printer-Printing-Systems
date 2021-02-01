@@ -1,0 +1,20 @@
+const MAX_SHEETS = 3
+range PAPER_RANGE = 0..MAX_SHEETS
+set PRINTING_ACTIONS = {student_aquire, technician_aquire, print, refill, release }
+
+PRINTER(A = MAX_SHEETS) = PRINTINGMACHINE[A],
+PRINTINGMACHINE[p : 0..A] = (
+								when(p>0) student_aquire -> print -> release -> PRINTINGMACHINE[p - 1] |
+								when(p==0) technician_aquire -> refill -> release -> PRINTINGMACHINE[MAX_SHEETS]
+							 ).
+
+STUDENT(B = 1) = STUDENTPROCESS[B],
+STUDENTPROCESS[s : 0..B] = (
+								when(s>0) student_aquire -> print -> release -> STUDENTPROCESS[s - 1] |
+								when(s==0)complete -> END
+							)+ PRINTING_ACTIONS.
+
+TECHNICIAN = (technician_aquire -> refill -> release -> TECHNICIAN |
+			  waiting -> TECHNICIAN)+ PRINTING_ACTIONS.
+
+||PRINTING_SYSTEM = (std1: STUDENT(3) || std2: STUDENT(2) || tech: TECHNICIAN || {std1, std2, tech} :: PRINTER).
